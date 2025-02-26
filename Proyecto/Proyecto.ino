@@ -19,9 +19,9 @@ Definición de los motores:
                       ^
                       |
                     _____
-     frontalIzq ->  |   |   <- frontalDer
+         motor1 ->  |   |   <- motor2
                     |   |
-        colaIzq ->  |___|   <- colaDer
+         motor3 ->  |___|   <- motor4
 
 Nota: El coche, en su recorrido hacia delante, sigue la flecha.
 
@@ -42,8 +42,8 @@ const int controladorVelocidad = 3; // Variable para controlar la velocidad de u
 // Sensores IR
 const int ir1 = 5;
 const int ir2 = 7;
-const int en1 = 1;
-const int en2 = 13;
+const int en = 1;
+// const int en2 = 13; IMPORTANTE: la salida ENABLE va a ser común para los dos sensores IR.
 
 // Sensores Ultrasónicos
 const int echo1 = 9;
@@ -52,8 +52,7 @@ const int trigger1 = 10;
 const int trigger2 = 12;
 
 // Cadena con el destino de la carretilla:
-String destino;
-
+String destino = "123123";
 
 void setup() {
   Serial.begin(9600);
@@ -70,8 +69,8 @@ void setup() {
   pinMode(ir1, INPUT); // Sensor de la derecha
   pinMode(ir2, INPUT); // Sensor de la izquierda
     // Por defecto, activamos ambos sensores:
-  digitalWrite(en1, HIGH);
-  digitalWrite(en2, HIGH);
+  digitalWrite(en, HIGH);
+  // digitalWrite(en2, HIGH); ENABLE común para ambos sensores
 
   // Sensores Ultrasónicos
   pinMode(echo1, INPUT);
@@ -81,31 +80,28 @@ void setup() {
     // Inicializamos los triggers en LOW:
   digitalWrite(trigger1, LOW);
   digitalWrite(trigger2, LOW);
-
-
 }
 
 void loop() {
-
   // Condiciones:
   // Si la distancia recibida por los ultrasónicos es menor a 10, el coche se detiene, luego:
-  if (distancia(trigger1, echo1) < 10 || distancia(trigger2, echo2)) {
+  if (distancia(trigger1, echo1) < 10 || distancia(trigger2, echo2) < 10) {
     detener();
   } else {
     // Si la distancia supera los 10 cm, entonces el coche se moverá:
     if (sensoresIR(ir1) !=1 && sensoresIR(ir2) !=1) {
       // Si solo se activa un sensor o ninguno, el movimiento del coche será "normal";
       movimiento(ir1, ir2);
-
     } else {
       // Código para cuando encuentre una "rotonda o un objeto", es decir, cuando ambos sensores se activen.
+      // Tomar el primer carácter y convertirlo en número
+      int salida = cadena.substring(0, 1).toInt();
+      dobleLinea(salida);
+      // Eliminar el primer carácter de la cadena
+      cadena = cadena.substring(1);
     }
-
   }
-  
-
 }
-
 
 /*
  \
@@ -191,4 +187,33 @@ int sensoresIR(int sensorIR) {
     return 0;
   }
   return 1;
+}
+
+// ¿Qué hacer cuando toma una línea doble?
+/*
+En el caso de que ambos sensores se activen diremos que llega a una rotonda.
+Reglas:
+  - Siempre va a tomar la rotonda por el carril derecho, en sentido antihorario del reloj
+*/
+
+void dobleLinea(int salida){
+  /*
+  int salida indica la salida por la que tiene que salir el coche.
+  */
+
+  // Para evitar problemas, apagamos ambos sensores IR justo antes de tomar la rotonda:
+  digitalWrite(en, LOW);
+  delay(50);
+  derecha();
+  delay(100); // IMPORTANTE: hay que calcular de forma experimental el tiempo que tarda en ponerse en la rotonda, es decir, el tiempo en el que se incorpora en el carril:
+  digitalWrite(en, HIGH); // Volvemos a activar los sensores
+  while (salida > 1){
+    movimiento(ir1, ir2);
+    if (sensoresIR(ir1) == 1 && sensoresIR(ir2 == 1)){
+      salida =- 1;
+    }
+  }
+  delay(50);
+  derecha();
+  delay(100); // IMPORTANTE: tiempo experimental en salir de la rotonda.
 }
