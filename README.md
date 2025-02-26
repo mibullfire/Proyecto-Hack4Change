@@ -77,3 +77,30 @@ void movimiento(int sensorIRDerecha, int sensorIRIzquierda) {
   }
 }
 ```
+
+### Código para los Sensores
+`distacia` calcula la distancia según el trigger y el echo de cada sensor IR, debido a que se usa muchísimo en el código, he creado una función a parte.
+`sensoresIR` convierte el estado del sensor IR en 0 o 1. Si el sensor está activo, devuelve un uno, si no, devuelve un 0.
+```c++
+int distancia(int Trigger, int Echo) {
+  long t; // Tiempo que tarda en llegar el eco
+  long d; // Distancia en centimetros
+ 
+  digitalWrite(Trigger, HIGH);
+  delayMicroseconds(10);          
+  digitalWrite(Trigger, LOW);
+  
+  t = pulseIn(Echo, HIGH); 
+  d = t/59;
+
+  return d;
+}
+
+int sensoresIR(int sensorIR) {
+  int estado = digitalRead(sensorIR);
+  if (estado == LOW) {
+    return 0;
+  }
+  return 1;
+}
+```
