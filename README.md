@@ -12,6 +12,7 @@ La estrucutra del coche gira en torno a un Arduino central, que controla:
 ## Configuración
 ![Circuito](images/circuito.png)
 Nota: los motores deben de conectarse al Driver, depende de que Driver tengamos disponibles su configuración varía.
+Para los motores debemos usar el driver L298N, hay un tutorial muy bueno en https://youtu.be/0bxqxp9EkVI. El resto de componentes se conectan de la misma forma.
 
 ## Variables Importantes
 A parte de las variables que declaran los pines de los diferentes componentes tenemos otras dos a destacar:
